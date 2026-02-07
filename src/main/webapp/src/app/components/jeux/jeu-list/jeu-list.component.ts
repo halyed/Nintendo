@@ -53,12 +53,13 @@ export class JeuListComponent implements OnInit {
   displayedColumns = ['id', 'titre', 'console', 'boutique', 'actions'];
   dataSource = new MatTableDataSource<Jeu>();
   loading = true;
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+
+  @ViewChild(MatPaginator) set paginator(p: MatPaginator) { if (p) this.dataSource.paginator = p; }
+  @ViewChild(MatSort) set sort(s: MatSort) { if (s) this.dataSource.sort = s; }
 
   ngOnInit(): void { this.load(); }
   private load(): void {
-    this.jeuService.getAll().subscribe({ next: (data) => { this.dataSource.data = data; this.dataSource.paginator = this.paginator; this.dataSource.sort = this.sort; this.loading = false; }, error: () => { this.loading = false; } });
+    this.jeuService.getAll().subscribe({ next: (data) => { this.dataSource.data = data; this.loading = false; }, error: () => { this.loading = false; } });
   }
   delete(jeu: Jeu): void {
     this.dialog.open(ConfirmDialogComponent, { data: { title: 'Supprimer', message: `Supprimer "${jeu.titre}" ?` } }).afterClosed().subscribe((ok) => {

@@ -50,11 +50,12 @@ export class AchatListComponent implements OnInit {
   displayedColumns = ['id', 'jeu', 'client', 'date', 'prix', 'actions'];
   dataSource = new MatTableDataSource<Achat>();
   loading = true;
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+
+  @ViewChild(MatPaginator) set paginator(p: MatPaginator) { if (p) this.dataSource.paginator = p; }
+  @ViewChild(MatSort) set sort(s: MatSort) { if (s) this.dataSource.sort = s; }
 
   ngOnInit(): void { this.load(); }
-  private load(): void { this.achatService.getAll().subscribe({ next: (d) => { this.dataSource.data = d; this.dataSource.paginator = this.paginator; this.dataSource.sort = this.sort; this.loading = false; }, error: () => { this.loading = false; } }); }
+  private load(): void { this.achatService.getAll().subscribe({ next: (d) => { this.dataSource.data = d; this.loading = false; }, error: () => { this.loading = false; } }); }
   delete(a: Achat): void {
     this.dialog.open(ConfirmDialogComponent, { data: { title: 'Supprimer', message: 'Supprimer cet achat ?' } }).afterClosed().subscribe((ok) => {
       if (ok && a.id) this.achatService.delete(a.id).subscribe({ next: () => { this.snackBar.open('Supprimé', 'Fermer', { duration: 3000 }); this.load(); } });

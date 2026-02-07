@@ -76,14 +76,15 @@ export class ConsoleListComponent implements OnInit {
   displayedColumns = ['id', 'nom', 'prix', 'dateSortie', 'type', 'actions'];
   dataSource = new MatTableDataSource<Console>();
   loading = true;
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+
+  @ViewChild(MatPaginator) set paginator(p: MatPaginator) { if (p) this.dataSource.paginator = p; }
+  @ViewChild(MatSort) set sort(s: MatSort) { if (s) this.dataSource.sort = s; }
 
   ngOnInit(): void { this.loadConsoles(); }
 
   private loadConsoles(): void {
     this.consoleService.getAll().subscribe({
-      next: (consoles) => { this.dataSource.data = consoles; this.dataSource.paginator = this.paginator; this.dataSource.sort = this.sort; this.loading = false; },
+      next: (consoles) => { this.dataSource.data = consoles; this.loading = false; },
       error: () => { this.snackBar.open('Erreur lors du chargement', 'Fermer', { duration: 3000 }); this.loading = false; }
     });
   }

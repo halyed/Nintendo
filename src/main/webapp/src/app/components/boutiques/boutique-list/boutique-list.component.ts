@@ -48,11 +48,12 @@ export class BoutiqueListComponent implements OnInit {
   displayedColumns = ['id', 'nom', 'adresse', 'actions'];
   dataSource = new MatTableDataSource<Boutique>();
   loading = true;
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+
+  @ViewChild(MatPaginator) set paginator(p: MatPaginator) { if (p) this.dataSource.paginator = p; }
+  @ViewChild(MatSort) set sort(s: MatSort) { if (s) this.dataSource.sort = s; }
 
   ngOnInit(): void { this.load(); }
-  private load(): void { this.boutiqueService.getAll().subscribe({ next: (d) => { this.dataSource.data = d; this.dataSource.paginator = this.paginator; this.dataSource.sort = this.sort; this.loading = false; }, error: () => { this.loading = false; } }); }
+  private load(): void { this.boutiqueService.getAll().subscribe({ next: (d) => { this.dataSource.data = d; this.loading = false; }, error: () => { this.loading = false; } }); }
   delete(b: Boutique): void {
     this.dialog.open(ConfirmDialogComponent, { data: { title: 'Supprimer', message: `Supprimer "${b.nom}" ?` } }).afterClosed().subscribe((ok) => {
       if (ok && b.id) this.boutiqueService.delete(b.id).subscribe({ next: () => { this.snackBar.open('Supprimé', 'Fermer', { duration: 3000 }); this.load(); } });
