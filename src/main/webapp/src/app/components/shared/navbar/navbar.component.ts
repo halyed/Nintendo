@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-navbar',
@@ -37,6 +38,13 @@ import { MatIconModule } from '@angular/material/icon';
           Achats
         </a>
       </nav>
+      <span class="user-section">
+        <mat-icon>account_circle</mat-icon>
+        <span class="username">{{ authService.getUsername() }}</span>
+        <button mat-icon-button (click)="authService.logout()" title="Déconnexion">
+          <mat-icon>logout</mat-icon>
+        </button>
+      </span>
     </mat-toolbar>
   `,
   styles: [`
@@ -45,6 +53,18 @@ import { MatIconModule } from '@angular/material/icon';
     .nav-links a { margin-left: 8px; }
     .nav-links a.active { background: rgba(255, 255, 255, 0.1); }
     mat-icon { margin-right: 4px; }
+    .user-section {
+      display: flex;
+      align-items: center;
+      margin-left: 16px;
+      gap: 4px;
+    }
+    .username {
+      font-size: 14px;
+      margin-right: 4px;
+    }
   `]
 })
-export class NavbarComponent {}
+export class NavbarComponent {
+  authService = inject(AuthService);
+}

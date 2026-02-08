@@ -3,6 +3,7 @@ package com.nintendo.api.config;
 import com.nintendo.api.entity.*;
 import com.nintendo.api.repository.*;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -15,17 +16,23 @@ public class DataInitializer implements CommandLineRunner {
     private final JeuRepository jeuRepository;
     private final ClientRepository clientRepository;
     private final AchatRepository achatRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public DataInitializer(ConsoleRepository consoleRepository,
                            BoutiqueRepository boutiqueRepository,
                            JeuRepository jeuRepository,
                            ClientRepository clientRepository,
-                           AchatRepository achatRepository) {
+                           AchatRepository achatRepository,
+                           UserRepository userRepository,
+                           PasswordEncoder passwordEncoder) {
         this.consoleRepository = consoleRepository;
         this.boutiqueRepository = boutiqueRepository;
         this.jeuRepository = jeuRepository;
         this.clientRepository = clientRepository;
         this.achatRepository = achatRepository;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -122,11 +129,21 @@ public class DataInitializer implements CommandLineRunner {
         achatRepository.save(achat5);
         achatRepository.save(achat6);
 
+        // Create default admin user
+        if (!userRepository.existsByUsername("admin")) {
+            User admin = new User();
+            admin.setUsername("admin");
+            admin.setPassword(passwordEncoder.encode("admin123"));
+            admin.setRole("ADMIN");
+            userRepository.save(admin);
+        }
+
         System.out.println("Sample data initialized successfully!");
         System.out.println("Consoles: " + consoleRepository.count());
         System.out.println("Boutiques: " + boutiqueRepository.count());
         System.out.println("Jeux: " + jeuRepository.count());
         System.out.println("Clients: " + clientRepository.count());
         System.out.println("Achats: " + achatRepository.count());
+        System.out.println("Users: " + userRepository.count());
     }
 }

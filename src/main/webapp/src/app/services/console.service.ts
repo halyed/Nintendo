@@ -20,7 +20,8 @@ export class ConsoleService {
   }
 
   create(console: any): Observable<Console> {
-    return this.http.post<Console>(this.apiUrl, console);
+    const type = (console.type as string).toLowerCase();
+    return this.http.post<Console>(`${this.apiUrl}/${type}`, console);
   }
 
   update(id: number, console: any): Observable<Console> {

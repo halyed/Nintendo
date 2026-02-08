@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './components/shared/navbar/navbar.component';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -9,4 +10,6 @@ import { NavbarComponent } from './components/shared/navbar/navbar.component';
   templateUrl: './app.html',
   styles: [`main { min-height: calc(100vh - 64px); background: #f5f5f5; }`]
 })
-export class App {}
+export class App {
+  authService = inject(AuthService);
+}
