@@ -1,0 +1,82 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ──────────────────────────────────────────────
+  # CI — Build & Test
+  # Runs on every push and every pull request
+  # ──────────────────────────────────────────────
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      # frontend-maven-plugin installs Node automatically,
+      # no need to set up Node separately
+      - name: Build (Maven + Angular)
+        run: mvn package -B
+
+      - name: Upload JAR
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-jar
+          path: target/*.jar
+          retention-days: 1
+
+  # ──────────────────────────────────────────────
+  # CD — Deploy to server
+  # Runs only on push to main (not on PRs)
+  #
+  # Required GitHub Secrets (Settings → Secrets → Actions):
+  #   SERVER_HOST     — server IP or domain
+  #   SERVER_USER     — SSH user (e.g. ubuntu, root)
+  #   SERVER_SSH_KEY  — private SSH key (the full content of your .pem / id_rsa)
+  # ──────────────────────────────────────────────
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Download JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: app-jar
+
+      - name: Copy JAR to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          source: "*.jar"
+          target: "/opt/nintendo"
+
+      - name: Restart application
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd /opt/nintendo
+            # Rename JAR to a fixed name so the service always finds it
+            mv *.jar app.jar
+            sudo systemctl restart nintendo
